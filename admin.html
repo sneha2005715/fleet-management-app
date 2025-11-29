@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fleet Management — Admin Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: #f0f0f0;
+      padding: 18px;
+      border-right: 2px solid #dcdcdc;
+    }
+    .sidebar h3 { margin-bottom: 18px; }
+
+    .sidebar input,
+    .sidebar select,
+    .sidebar button {
+      width: 100%;
+      margin-bottom: 12px;
+      padding: 8px;
+      font-size: 15px;
+    }
+
+    /* Right section */
+    .right-section {
+      width: 100%;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: #efefef;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 2px solid #dcdcdc;
+    }
+    .navbar select,
+    .navbar button {
+      padding: 7px 10px;
+      font-size: 15px;
+    }
+
+    /* Fleet card container */
+    #fleetContainer {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      overflow-y: auto;
+      height: calc(100vh - 65px);
+    }
+
+    /* Card */
+    .card {
+      background: #fff;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      padding: 12px;
+    }
+    .card img {
+      width: 100%;
+      height: 130px;
+      object-fit: cover;
+      margin-bottom: 6px;
+    }
+    .card button {
+      margin-top: 6px;
+      width: 100%;
+      padding: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h3>Add Fleet 🚐</h3>
+    <input type="text" id="reg" placeholder="Reg No of Vehicle">
+    <select id="category">
+      <option value="">Select Category</option>
+      <option value="Auto">Auto</option>
+      <option value="Car">Car</option>
+      <option value="Truck">Truck</option>
+      <option value="Bus">Bus</option>
+    </select>
+    <input type="text" id="driver" placeholder="Driver Name">
+    <select id="availability">
+      <option value="">Availability</option>
+      <option value="Available">Available</option>
+      <option value="Unavailable">Unavailable</option>
+    </select>
+    <button id="addBtn">Add Fleet</button>
+  </div>
+
+  <!-- Right Side -->
+  <div class="right-section">
+
+    <!-- Navbar -->
+    <div class="navbar">
+      <select id="filterCategory">
+        <option value="">All Category</option>
+        <option value="Auto">Auto</option>
+        <option value="Car">Car</option>
+        <option value="Truck">Truck</option>
+        <option value="Bus">Bus</option>
+      </select>
+
+      <select id="filterAvailability">
+        <option value="">Availability</option>
+        <option value="Available">Available</option>
+        <option value="Unavailable">Unavailable</option>
+      </select>
+
+      <button id="clearFilters">Clear Filter</button>
+    </div>
+
+    <!-- Cards Area -->
+    <div id="fleetContainer"></div>
+  </div>
+
+<script>
+  let fleetData = [];
+  const imgURL = "https://t4.ftcdn.net/jpg/05/51/30/49/360_F_551304920_0LZaRzbD920W48KmhDuT8mD0iqHQXcqE.jpg";
+
+  const reg = document.getElementById("reg");
+  const category = document.getElementById("category");
+  const driver = document.getElementById("driver");
+  const availability = document.getElementById("availability");
+  const container = document.getElementById("fleetContainer");
+
+  document.getElementById("addBtn").addEventListener("click", () => {
+    if (!reg.value || !category.value || !driver.value || !availability.value) {
+      alert("All fields are required!");
+      return;
+    }
+
+    fleetData.push({
+      reg: reg.value,
+      category: category.value,
+      driver: driver.value,
+      availability: availability.value
+    });
+
+    reg.value = "";
+    category.value = "";
+    driver.value = "";
+    availability.value = "";
+
+    render(fleetData);
+  });
+
+  function render(data) {
+    container.innerHTML = "";
+    data.forEach((item, index) => {
+      container.innerHTML += `
+        <div class="card">
+          <img src="https://coding-platform.s3.amazonaws.com/dev/lms/tickets/5e80fcb6-3f8e-480c-945b-30a5359eb40e/JNmYjkVr3WOjsrbu.png">
+          <p><b>Reg No:</b> ${item.reg}</p>
+          <p><b>Category:</b> ${item.category}</p>
+          <p><b>Driver:</b> ${item.driver}</p>
+          <p><b>Status:</b> ${item.availability}</p>
+          <button onclick="updateDriver(${index})">Update Driver</button>
+          <button onclick="changeStatus(${index})">Change Availability</button>
+          <button onclick="deleteCard(${index})">Delete Vehicle</button>
+        </div>
+      `;
+    });
+  }
+
+  window.updateDriver = function(index) {
+    let newName = prompt("Enter new driver name:");
+    if (!newName || !newName.trim()) {
+      alert("Driver name cannot be empty!");
+      return;
+    }
+    fleetData[index].driver = newName;
+    render(fleetData);
+  };
+
+  window.changeStatus = function(index) {
+    fleetData[index].availability =
+      fleetData[index].availability === "Available" ? "Unavailable" : "Available";
+    render(fleetData);
+  };
+
+  window.deleteCard = function(index) {
+    if (confirm("Are you sure to delete this vehicle?")) {
+      fleetData.splice(index, 1);
+      render(fleetData);
+    }
+  };
+
+  document.getElementById("filterCategory").addEventListener("change", filter);
+  document.getElementById("filterAvailability").addEventListener("change", filter);
+  document.getElementById("clearFilters").addEventListener("click", () => {
+    document.getElementById("filterCategory").value = "";
+    document.getElementById("filterAvailability").value = "";
+    render(fleetData);
+  });
+
+  function filter() {
+    let cat = document.getElementById("filterCategory").value;
+    let avail = document.getElementById("filterAvailability").value;
+
+    let filtered = fleetData.filter(v =>
+      (cat === "" || v.category === cat) &&
+      (avail === "" || v.availability === avail)
+    );
+    render(filtered);
+  }
+</script>
+
+</body>
+</html>
